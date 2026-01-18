@@ -1,0 +1,24 @@
+---
+- name: Configure MikroTik to send logs to Logstash
+  hosts: mikrotik
+  gather_facts: no
+  vars:
+    logstash_server: "{{ logstash_server | default('127.0.0.1') }}"
+    logstash_port: "{{ logstash_port | default(514) }}"
+  tasks:
+    - name: Enable remote logging to Logstash
+      community.routeros.command:
+        commands:
+          - /system logging action set 0 memory-lines=1
+          - /system logging action set 1 disk-file-count=1 disk-lines-per-file=1
+          - /system logging action set 2 remember=no
+          - /system logging action add name=remotelog target=remote remote={{ logstash_server }} remote-port={{ logstash_port }}
+          - /system logging add topics=info action=remotelog
+          - /system logging add topics=warning action=remotelog
+          - /system logging add topics=error action=remotelog
+          - /system logging add topics=critical action=remotelog
+      register: result
+
+    - name: Show result
+      debug:
+        var: result
