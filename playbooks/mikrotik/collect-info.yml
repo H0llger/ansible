@@ -1,0 +1,38 @@
+---
+- name: Collect Mikrotik system info and IPs
+  hosts: mikrotik
+  gather_facts: no
+  vars:
+    output_dir: "/tmp/mikrotik-info"
+
+  tasks:
+    - name: Ensure output directory exists
+      ansible.builtin.file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Get routerboard info
+      community.routeros.command:
+        commands:
+          - /system routerboard print
+      register: system_routerboard
+
+    - name: Get info
+      community.routeros.command:
+        commands:
+          - /system health print
+      register: system_ip
+
+    - name: Save info to local file
+      ansible.builtin.copy:
+        dest: "{{ output_dir }}/{{ inventory_hostname }}.txt"
+        content: |
+          ==== ROUTERBOARD INFO ====
+          {{ system_routerboard.stdout[0] | default('') }}
+
+          ==== SYSTEM STATE INFO ====
+          {{ system_ip.stdout[0] | default('') }}
+      delegate_to: localhost
