@@ -1,0 +1,52 @@
+---
+- name: backup to local server
+  hosts: mikrotik
+  gather_facts: no
+  vars:
+    backup_dir: "/tmp/mikrotik-backups"
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d') }}"
+
+  tasks:
+    - name: "Create backup directory"
+      ansible.builtin.file:
+        path: "{{ backup_dir }}"
+        state: directory
+      delegate_to: localhost
+
+    - name: "Create host-specific backup directory"
+      ansible.builtin.file:
+        path: "{{ backup_dir }}/{{ inventory_hostname }}"
+        state: directory
+      delegate_to: localhost
+
+    - name: "ROS System Backup"
+      community.routeros.command:
+        commands: /system backup save name={{ inventory_hostname }} password={{ backup_password }}
+      register: backup_task
+
+
+    - name: "Check if system backup file exists"
+      ansible.builtin.stat:
+        path: "/{{ inventory_hostname }}.backup"
+      register: backup_file_stat
+
+    - name: "Download system backup using net_get"
+      ansible.netcommon.net_get:
+        src: "/{{ inventory_hostname }}.backup"
+        dest: "{{ backup_dir }}/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ timestamp }}.backup"
+
+    - name: "Starting ROS Configuration Backup"
+      community.routeros.command:
+        commands: /export show-sensitive file={{ inventory_hostname }}
+      register: backup_task
+
+    - name: "Check if configuration backup file exists"
+      ansible.builtin.stat:
+        path: "/{{ inventory_hostname }}.rsc"
+      register: config_file_stat
+
+    - name: "Download configuration using net_get"
+      ansible.netcommon.net_get:
+        src: "/{{ inventory_hostname }}.rsc"
+        dest: "{{ backup_dir }}/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ timestamp }}.rsc"
+
