@@ -1,0 +1,34 @@
+---
+- name: Check L2TP server is enabled
+  hosts: mikrotik
+  gather_facts: false
+
+  tasks:
+
+    - name: Get L2TP server status
+      community.routeros.command:
+        commands:
+          - /interface l2tp-server server print
+      register: l2tp_config
+
+    - name: Check if L2TP is enabled
+      set_fact:
+        l2tp_enabled: "{{ 'enabled: yes' in l2tp_config.stdout[0] or 'enabled: true' in l2tp_config.stdout[0] }}"
+
+    - name: Show L2TP status - enabled
+      debug:
+        msg: "L2TP server is ENABLED"
+      when: l2tp_enabled
+
+    - name: Show L2TP status - disabled
+      debug:
+        msg: "L2TP server is DISABLED"
+      when: not l2tp_enabled
+
+    - name: Save result to local log file
+      ansible.builtin.lineinfile:
+        path: "./l2tp_status.log"
+        line: "{{ inventory_hostname }} - L2TP: {{ 'ENABLED' if l2tp_enabled else 'DISABLED' }}"
+        create: true
+        insertafter: EOF
+      delegate_to: localhost
