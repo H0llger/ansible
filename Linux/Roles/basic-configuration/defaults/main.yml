@@ -1,0 +1,7 @@
+---
+bashrc_user: root
+bashrc_home: "/root"
+
+bash_aliases:
+  ll: "ls -la"
+  tree: "exa --tree --icons --color=always"

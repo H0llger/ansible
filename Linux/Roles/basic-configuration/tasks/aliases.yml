@@ -1,0 +1,19 @@
+---
+- name: Ensure .bashrc exists
+  file:
+    path: "{{ bashrc_home }}/.bashrc"
+    state: touch
+    owner: "{{ bashrc_user }}"
+    group: "{{ bashrc_user }}"
+    mode: '0644'
+
+- name: Configure bash aliases
+  lineinfile:
+    path: "{{ bashrc_home }}/.bashrc"
+    line: "alias {{ item.key }}='{{ item.value }}'"
+    state: present
+    create: no
+    owner: "{{ bashrc_user }}"
+    group: "{{ bashrc_user }}"
+    mode: '0644'
+  loop: "{{ bash_aliases | dict2items }}"

@@ -1,0 +1,7 @@
+- hosts: linux
+  become: true
+  roles:
+    - role: basic-configuration
+      vars:
+        bashrc_user: root
+        bashrc_home: /root

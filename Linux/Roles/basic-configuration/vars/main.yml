@@ -1,0 +1,27 @@
+---
+common_packages:
+  - sudo
+  - exa
+  - atop
+  - htop
+  - iotop
+  - ncdu
+  - curl
+  - wget
+  - nmap
+  - dnsutils
+  - mtr
+  - zip
+  - unzip
+  - p7zip-full
+  - rsync
+  - jq
+  - lsof
+  - strace
+  - tcpdump
+  - iftop
+  - nload
+  - parted
+  - smartmontools
+  - bash-completion
+  - neofetch
